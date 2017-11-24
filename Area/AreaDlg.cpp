@@ -362,16 +362,16 @@ void CAreaDlg::DrawImage(CDC* dc)
 	{
 		lX2 = lX1 +  nMid;
 		lY2 = nY0 + nA * sin(double(lX2 - nX0) / double(m_rect.Width()) * 2 * PI);
-		dc->MoveTo(lX1,lY1);
-		dc->LineTo(lX2,lY2);
+		dc->MoveTo((int)lX1,(int)lY1);
+		dc->LineTo((int)lX2,(int)lY2);
 
 		if(m_bCalculate)
 		{	
 			//draw area shadow
 			if(i % 2)
 			{
-				dc->MoveTo(lX1,nY0);
-				dc->LineTo(lX1,lY2);
+				dc->MoveTo((int)lX1,(int)nY0);
+				dc->LineTo((int)lX1,(int)lY2);
 			}
 		}
 
@@ -427,7 +427,7 @@ void CAreaDlg::OnLButtonUp(UINT nFlags,CPoint point)
 	{
 		CColorDialog clrdlg;
 
-		if( clrdlg.DoModal() == true )
+		if( clrdlg.DoModal() > 0 ? true : false)
 		{
 			m_clrref = clrdlg.GetColor();
 			//set background with the same color
