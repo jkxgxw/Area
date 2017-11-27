@@ -32,10 +32,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
-public:
-	afx_msg void OnBnClickedButtonCalculate();
-	afx_msg void OnBnClickedButtonConcel();
-	afx_msg void OnBnClickedButtonColor();
+
 public:
 	CEdit m_EditSpin;
 	CSliderCtrl m_Slider;
@@ -47,7 +44,9 @@ public:
 	int m_mid_val;
 	int m_a;
 	bool m_bCalculate;
-public:
+	bool m_bSin;
+
+private:
 	afx_msg void OnNMThemeChangedSliderColor(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMCustomdrawSliderColor(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnEnUpdateEditSpin();
@@ -56,7 +55,17 @@ public:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd *pWnd,UINT nCtlColor);
 	afx_msg void OnLButtonUp(UINT nFlags,CPoint point);
 	afx_msg void OnHScroll(UINT nSBCode,UINT nPos,CScrollBar* pScrollBar);
-public:
+	afx_msg void OnBnClickedRadioSin();
+	afx_msg void OnBnClickedRadioCos();
+	afx_msg void OnBnClickedButtonCalculate();
+	afx_msg void OnBnClickedButtonConcel();
+	afx_msg void OnBnClickedButtonColor();
+
+private:
+	void CalcSin();
+	void CalcCos();
 	void DrawBK(CDC* dc);
 	void DrawImage(CDC* dc);
+	void DrawCos(CDC *dc);
+	void DrawSin(CDC *dc);
 };

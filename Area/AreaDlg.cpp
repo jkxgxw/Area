@@ -50,6 +50,7 @@ END_MESSAGE_MAP()
 
 CAreaDlg::CAreaDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAreaDlg::IDD, pParent)
+	, m_bSin(true)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -81,7 +82,8 @@ BEGIN_MESSAGE_MAP(CAreaDlg, CDialog)
 	ON_EN_UPDATE(IDC_EDIT_SPIN, &CAreaDlg::OnEnUpdateEditSpin)
 	ON_EN_KILLFOCUS(IDC_EDIT_SPIN, &CAreaDlg::OnEnKillfocusEditSpin)
 	ON_CBN_SELCHANGE(IDC_COMBO_NUM, &CAreaDlg::OnCbnSelchangeComboNum)
-	
+	ON_BN_CLICKED(IDC_RADIO_SIN, &CAreaDlg::OnBnClickedRadioSin)
+	ON_BN_CLICKED(IDC_RADIO_COS, &CAreaDlg::OnBnClickedRadioCos)
 END_MESSAGE_MAP()
 
 
@@ -129,8 +131,11 @@ BOOL CAreaDlg::OnInitDialog()
 	CString strVal;
 	m_ComboBox.GetLBText(m_ComboBox.GetCurSel(),strVal);
 	m_mid_val = _ttoi(strVal);
-
 	m_EditColor.EnableWindow(FALSE);
+
+	CButton *pBtnSin = (CButton*)GetDlgItem(IDC_RADIO_SIN);
+	if(NULL != pBtnSin)
+		pBtnSin->SetCheck(BST_CHECKED);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -207,6 +212,37 @@ HCURSOR CAreaDlg::OnQueryDragIcon()
 
 
 void CAreaDlg::OnBnClickedButtonCalculate()
+{
+	if(!m_bSin)
+		CalcSin();
+	else
+		CalcCos();
+}
+
+void CAreaDlg::CalcCos()
+{
+	double nSum = 0.0;
+	double nMidLen = double((2 * PI) / 2000.0 * m_mid_val);
+	double nUp = 0.0;
+	double nDown = 0.0;
+	double nHight = nMidLen;
+	CString strVal = _T("");
+
+	for(int i = 1; i < 2000 / m_mid_val; i++)
+	{
+		nDown = abs(m_a * cos(double(nMidLen * i)));
+		nSum += (nUp + nDown) * nHight / 2.0;
+		nUp = nDown;
+	}
+	
+	strVal.Format(_T("%f"),nSum);
+	m_EditArea.SetWindowText(strVal);
+	//send msg to draw area shadow
+	m_bCalculate = true;
+	InvalidateRect(m_rect,false);
+}
+
+void CAreaDlg::CalcSin()
 {
 	//Calculate the area of the shape, S = (a + b) * h / 2.0
 	// TODO: 在此添加控件通知处理程序代码
@@ -340,7 +376,14 @@ void CAreaDlg::DrawBK(CDC* dc)
 void CAreaDlg::DrawImage(CDC* dc)
 {
 	//Draw Image
+	if(m_bSin)
+		DrawSin(dc);
+	else 
+		DrawCos(dc);
+}
 
+void CAreaDlg::DrawSin(CDC* dc)
+{
 	//Pen Color
 	CPen pen(PS_SOLID,1,m_clrref);
 	CPen *pOldPen=dc->SelectObject(&pen);
@@ -379,6 +422,48 @@ void CAreaDlg::DrawImage(CDC* dc)
 		lY1 = lY2;
 	}
 }
+
+void CAreaDlg::DrawCos(CDC* dc)
+{
+	//Pen Color
+	CPen pen(PS_SOLID,1,m_clrref);
+	CPen *pOldPen=dc->SelectObject(&pen);
+	CBrush *pBrush=CBrush::FromHandle((HBRUSH)GetStockObject(NULL_BRUSH));
+	CBrush *pOldBrush=dc->SelectObject(pBrush);
+
+	double nA = m_a * m_rect.Height() / 200.0;// ?
+	double nMid = (m_rect.Width() / 200.0);// ?
+	double nX0 = m_rect.left;
+	double nY0 = m_rect.top + m_rect.Height() / 2.0;
+	double lX1,lY1;
+	double lX2,lY2;
+
+	//(0,0)
+	lX1 = nX0;
+	lY1 = nY0 + nA * cos(double(nMid) / double(m_rect.Width()) * 2 * PI);
+	
+	for(int i = 1; i < 200,lX1 < m_rect.right ; i++)
+	{
+		lX2 = lX1 +  nMid;
+		lY2 = nY0 + nA * cos(double(lX2 - nX0) / double(m_rect.Width()) * 2 * PI);
+		dc->MoveTo((int)lX1,(int)lY1);
+		dc->LineTo((int)lX2,(int)lY2);
+
+		if(m_bCalculate)
+		{	
+			//draw area shadow
+			if(i % 2)
+			{
+				dc->MoveTo((int)lX1,(int)nY0);
+				dc->LineTo((int)lX1,(int)lY2);
+			}
+		}
+
+		lX1 = lX2;
+		lY1 = lY2;
+	}
+}
+
 void CAreaDlg::OnCbnSelchangeComboNum()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -436,4 +521,17 @@ void CAreaDlg::OnLButtonUp(UINT nFlags,CPoint point)
 			InvalidateRect(rc,false);
 		}
 	}
+}
+void CAreaDlg::OnBnClickedRadioSin()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_bSin = true;
+	InvalidateRect(m_rect,false);
+}
+
+void CAreaDlg::OnBnClickedRadioCos()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_bSin = false;
+	InvalidateRect(m_rect,false);
 }
